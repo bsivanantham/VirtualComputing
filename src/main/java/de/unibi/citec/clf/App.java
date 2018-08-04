@@ -1,5 +1,4 @@
 package de.unibi.citec.clf;
-
 /**
  * Hello world!
  *
