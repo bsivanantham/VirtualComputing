@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -432,12 +431,12 @@ public class SCXMLImportExport implements IImportExport {
 		System.out.println("Parsing file: "+filename);
 		SCXMLGraphEditor scxmlGraphEditor = new SCXMLGraphEditor();
 		String out = scxmlGraphEditor.appendfile(filename);
-		ValidationWarningStatusPane validationWarningStatusPane = new ValidationWarningStatusPane();
-		String text = "Test if the editor is working";
-		validationWarningStatusPane.actionPerform(text);
+		String text = "Test please if ";
 
-
-
+		SCXMLGraphEditor.EditorPane validationWarningStatusPane ;
+		validationWarningStatusPane = new SCXMLGraphEditor.EditorPane();
+		validationWarningStatusPane.codeEditor= (JTextArea) validationWarningStatusPane.buildGUI(text,filename);
+		validationWarningStatusPane.actionPerformEditor(filename);
 
 		//.ValidationWarningStatusPane.appendfile(fileName);
 		File file=new File(filename);

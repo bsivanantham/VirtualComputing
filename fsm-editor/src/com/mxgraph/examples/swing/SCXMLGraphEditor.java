@@ -1,7 +1,6 @@
 package com.mxgraph.examples.swing;
 
 import java.awt.*;
-import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -13,9 +12,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -26,8 +22,6 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -36,7 +30,6 @@ import javax.swing.text.StyleConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.mxgraph.io.mxCodec;
 import com.mxgraph.util.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -50,7 +43,6 @@ import org.apache.lucene.store.LockObtainFailedException;
 import com.mxgraph.examples.config.SCXMLConstraints;
 import com.mxgraph.examples.swing.editor.fileimportexport.IImportExport;
 import com.mxgraph.examples.swing.editor.fileimportexport.ImportExportPicker;
-import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLEdge;
 import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLImportExport;
 import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLNode;
 import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions;
@@ -90,15 +82,16 @@ import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.util.mxUndoableEdit.mxUndoableChange;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import xmleditorkit.XMLEditorKit;
 
 
 public class SCXMLGraphEditor extends JPanel
 {
 	public Preferences preferences=Preferences.userRoot();
 	public ValidationWarningStatusPane validationStatus;
+	public EditorPane editorPane ;
+	public static String filestr;
+
 	private ImportExportPicker iep;
 
 	public String getCodeDisplay() {
@@ -143,11 +136,9 @@ public class SCXMLGraphEditor extends JPanel
 
 
 	public String appendfile(String filename) throws IOException, SAXException, ParserConfigurationException {
-		System.out.println("appendfile: "+filename);
-
 		//File file=new File(filename);
 		//editorPane.setEditorKit(new XMLEditorKit());
-
+		filestr = filename ;
 		ByteArrayOutputStream out = new ByteArrayOutputStream(1000000);
 		InputStream in = new BufferedInputStream(new FileInputStream(filename));
 		int c;
@@ -1123,33 +1114,12 @@ public class SCXMLGraphEditor extends JPanel
 		private final DefaultListModel listModel=new DefaultListModel();
 		private ListCellSelector listSelectorHandler;
 
-		public JTextArea editorPane;
 		private final static String newline = "\n";
 
 		public ValidationWarningStatusPane() {
-			//Create the list and put it in a scroll pane.
-			//balavivek
 			scxmlErrorsList=buildValidationWarningGUI();
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			add(new JLabel("Code Editor:"));
-			//add(new JScrollPane(scxmlErrorsList));
-			editorPane = new JTextArea(50, 50);
-			editorPane.setEditable(true);
-			add(new JScrollPane(editorPane));
-			//editorPane.setText("file: ");
-			//String text = "Test if the editor is working";
-			//actionPerform(text);
-			//editorPane.setText("text");
 			listSelectorHandler=new ValidationCellSelector(scxmlErrorsList, graphComponent);
-		}
-		public void actionPerform(String text) {
-			System.out.println("actionPerform file: "+text);
-			editorPane.append("actionPerform file: ");
-			editorPane.setText("file: ");
-			//editorPane.
-			//Make sure the new text is visible, even if there
-			//was a selection in the text area.
-			//editorPane.setCaretPosition(editorPane.getDocument().getLength());
 		}
 
 		private JList buildValidationWarningGUI() {
@@ -1160,14 +1130,14 @@ public class SCXMLGraphEditor extends JPanel
 			list.setCellRenderer((ListCellRenderer) new WarningRenderer());
 			return list;
 		}
-		
+
 		class ValidationCellSelector extends ListCellSelector {
 			public ValidationCellSelector(JList list, SCXMLGraphComponent gc) {
 				super(list, gc);
 			}
 			@Override
 			public mxCell getCellFromListElement(int selectedIndex) {
-				if (listModel.size()<selectedIndex) return null; 
+				if (listModel.size()<selectedIndex) return null;
 				Pair<Object,String> element=(Pair<Object, String>) listModel.get(selectedIndex);
 				if (element!=null) {
 					Object cell= element.getFirst();
@@ -1193,14 +1163,18 @@ public class SCXMLGraphEditor extends JPanel
 				if (isSelected) {
 					setBackground(list.getSelectionBackground());
 					setForeground(list.getSelectionForeground());
+									setText("file: ");
+
 				}
 				else {
 					setBackground(list.getBackground());
 					setForeground(list.getForeground());
+
 				}
 				setEnabled(list.isEnabled());
 				setFont(list.getFont());
 				setOpaque(true);
+
 				return this;
 			}
 		}
@@ -1241,7 +1215,152 @@ public class SCXMLGraphEditor extends JPanel
 			});
 		}
 	}
-	
+
+	public static class EditorPane extends JPanel implements ListSelectionListener {
+		public JTextArea codeEditor;
+		private final DefaultListModel listModel=new DefaultListModel();
+		private ListCellSelector listSelectorHandler;
+		public String code = "please";
+		public JTextArea editorPane;
+		private final static String newline = "\n";
+
+		public EditorPane() throws IOException {
+			//balavivek
+			String text = code;
+			codeEditor=buildGUI(text, filestr);
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		}
+
+		public void actionPerformEditor(String text) {
+			try{
+				//				codeEditor=buildGUI(code, filestr);
+			}
+			catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+
+		public JTextArea buildGUI(String text, String filename) throws IOException {
+			filename = "/home/balavivek/Bala/SEM2/Virtualcomputing/crowd.xml";
+			JTextArea list = new JTextArea();
+			System.out.println("filenamefilename file: "+filename);
+			 String codetext = null;
+			 int count = 0;
+
+			BufferedReader br = null;
+			add(new JLabel("Code Editor:"));
+			//add(new JScrollPane(scxmlErrorsList));
+			editorPane = new JTextArea(50, 50);
+			editorPane.setEditable(true);
+			add(new JScrollPane(editorPane));
+			if(filename!= null){
+				//String codetext =buildGUI(code, filestr);
+
+				filestr = filename ;
+				ByteArrayOutputStream out = new ByteArrayOutputStream(1000000);
+				InputStream in = new BufferedInputStream(new FileInputStream(filename));
+				int c;
+				while ((c = in.read()) != -1) {
+					out.write(c);
+				}
+				in.close();
+				//editorPane.setText(out.toString());
+				//editorPane.setText("test");
+			codetext = out.toString();
+
+			}
+			System.out.println("inside buildgui"+codetext);
+			editorPane.setText("\n actionPerform  text file: "+codetext);
+			editorPane.append("\n filename text : "+codetext);
+			return list;
+		}
+
+		class ValidationCellSelector extends ListCellSelector {
+			public ValidationCellSelector(JList list, SCXMLGraphComponent gc) {
+				super(list, gc);
+			}
+			@Override
+			public mxCell getCellFromListElement(int selectedIndex) {
+				if (listModel.size()<selectedIndex) return null;
+				Pair<Object,String> element=(Pair<Object, String>) listModel.get(selectedIndex);
+				if (element!=null) {
+					Object cell= element.getFirst();
+					if (cell instanceof mxCell) return (mxCell) cell;
+					else return null;
+				} else return null;
+			}
+		}
+
+		class WarningRenderer extends JTextArea implements ListCellRenderer {
+			public Component getListCellRendererComponent(
+					JList list,
+					Object value,            // value to display
+					int index,               // cell index
+					boolean isSelected,      // is the cell selected
+					boolean cellHasFocus)    // the list and the cell have the focus
+			{
+				String text="";
+				if (value!=null) {
+					text=((Pair<Object,String>) value).getSecond();
+				}
+				setText(text);
+				if (isSelected) {
+					setBackground(list.getSelectionBackground());
+					setForeground(list.getSelectionForeground());
+					setText("file: ");
+
+				}
+				else {
+					setBackground(list.getBackground());
+					setForeground(list.getForeground());
+
+				}
+				setEnabled(list.isEnabled());
+				setFont(list.getFont());
+				setOpaque(true);
+
+				return this;
+			}
+		}
+
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			listSelectorHandler.handleSelectEvent(e);
+		}
+		public void setWarnings(final HashMap<Object, String> warnings) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					ArrayList<Integer> indexToBeRemoved=new ArrayList<Integer>();
+					for (int i=0;i<listModel.size();i++) {
+						Pair<Object,String> el=(Pair<Object, String>) listModel.get(i);
+						if (el!=null) {
+							String warningsForCell=warnings.get(el.getFirst());
+							if (!StringUtils.isEmptyString(warningsForCell)) {
+								warningsForCell=StringUtils.cleanupSpaces(warningsForCell);
+								if (!warningsForCell.equals(el.getSecond()))
+									listModel.set(i, new Pair<Object,String>(el.getFirst(),warningsForCell));
+								warnings.remove(el.getFirst());
+							} else indexToBeRemoved.add(i);
+						} else {
+							indexToBeRemoved.add(i);
+						}
+					}
+					for(int i=indexToBeRemoved.size()-1;i>=0;i--)
+						listModel.removeElementAt(indexToBeRemoved.get(i));
+					for(Entry<Object,String> w:warnings.entrySet()) {
+						String warning=StringUtils.cleanupSpaces(w.getValue());
+						if (!StringUtils.isEmptyString(warning)) {
+							System.out.println(warning);
+							listModel.addElement(new Pair<Object, String>(w.getKey(), warning));
+						}
+					}
+				}
+			});
+		}
+	}
+
+
 	public JFrame createFrame(SCXMLGraphEditor editor) throws CorruptIndexException, LockObtainFailedException, IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException
 	{
 		SCXMLEditorFrame frame = new SCXMLEditorFrame(this);
@@ -1253,12 +1372,14 @@ public class SCXMLGraphEditor extends JPanel
 
 		// Creates the graph outline component
 		graphOutline = new mxGraphOutline(graphComponent,200,200);
-				
+
 		JPanel inner = new JPanel();
 		inner.setLayout(new BoxLayout(inner,BoxLayout.Y_AXIS));
 		validationStatus = new ValidationWarningStatusPane();
+		editorPane = new EditorPane();
 		inner.add(validationStatus);
 		inner.add(graphOutline);
+		inner.add(editorPane);
 		
 		JSplitPane outer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inner,graphComponent);
 		outer.setDividerLocation(200);
@@ -1268,7 +1389,7 @@ public class SCXMLGraphEditor extends JPanel
 		// Puts everything together
 		setLayout(new BorderLayout());
 		add(outer, BorderLayout.CENTER);
-		
+
 		scxmlListener=new SCXMLListener(frame,editor);
 		scxmlSearchtool=new SCXMLSearchTool(frame,editor);
 
