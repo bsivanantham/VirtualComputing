@@ -11,27 +11,35 @@ Main features:
   * search function using Apache Lucene
   * autolayout and possibility to save manual layout
   * export to DOT (graphviz) format
-  * scxml listener that highlights and logs events as they happen during the finite state machine execution. (see https://github.com/fmorbini/scxmlgui/blob/master/extra/MySCXMLListener.java as an example of an Apache scxml listener class that sends the proper messages to the editor)
+  * scxml listener that highlights and logs events as they happen during the finite state machine execution. (see https://github.com/bsivanantham/VirtualComputing/blob/master/extra/MySCXMLListener.java as an example of an Apache scxml listener class that sends the proper messages to the editor)
 
 A [short guide](https://github.com/fmorbini/scxmlgui/blob/wiki/Guide.md) is available.
 
-**Main issues/TODOs**: see the [Issues](https://github.com/fmorbini/scxmlgui/issues) tab.
-  * Please consider contributing to the code when submitting an issue, as i have very limited time to work on this project and help is appreciated. Thanks!
-
-**To test**: execute the latest jar (requires at least Java 1.6) https://github.com/fmorbini/scxmlgui/blob/master/extra/fsm-editor.jar
-
-**To compile**: cd in the root directory (trunk) and run "ant".
-
 Here some **screenshots**:
+
+SCXML complete File Loaded: 
+
+![edge editing](https://github.com/bsivanantham/VirtualComputing/blob/master/extra/Screenshot%20from%202018-07-29%2023-32-37.png)
+
+Code Editor Window :
+
+![edge editing](https://github.com/bsivanantham/VirtualComputing/blob/master/extra/Screenshot%20from%202018-08-09%2022-45-14.png)
+
+SCXML and Code Editor Window together (Code and SCML graph both can be edited and saved) :
+
+![edge editing](https://github.com/bsivanantham/VirtualComputing/blob/master/extra/Screenshot%20from%202018-08-09%2022-45-04.png)
 
 Editor window for edge properties:
 
-![edge editing](https://github.com/fmorbini/scxmlgui/blob/master/extra/edge-editing.png)
+![edge editing](https://github.com/bsivanantham/VirtualComputing/blob/master/extra/edge-editing.png)
 
 Context menu to select edit operations on a node:
 
-![node menu](https://github.com/fmorbini/scxmlgui/blob/master/extra/node-menu.png)
+![node menu](https://github.com/bsivanantham/VirtualComputing/blob/master/extra/node-menu.png)
 
 The find tool in action:
 
-![find tool](https://github.com/fmorbini/scxmlgui/blob/master/extra/find-tool.png)
+![find tool](https://github.com/bsivanantham/VirtualComputing/blob/master/extra/find-tool.png)
+
+
+Source: https://github.com/fmorbini/scxmlgui
