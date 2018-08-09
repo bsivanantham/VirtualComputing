@@ -435,16 +435,13 @@ public class SCXMLImportExport implements IImportExport {
 
 		SCXMLGraphEditor.EditorPane validationWarningStatusPane ;
 		validationWarningStatusPane = new SCXMLGraphEditor.EditorPane();
-		validationWarningStatusPane.codeEditor= (JTextArea) validationWarningStatusPane.buildGUI(text,filename);
-		validationWarningStatusPane.actionPerformEditor(filename);
+		validationWarningStatusPane.buildGUI(text,filename);
 
-		//.ValidationWarningStatusPane.appendfile(fileName);
 		File file=new File(filename);
 		Document doc = mxUtils.parseXMLFile(file,false,false);
 		doc.getDocumentElement().normalize();
 
 		SCXMLNode rootNode=getNodeHier(editor, doc.getDocumentElement(),parent,file.getParentFile(), restrictedConstraints);
-		System.out.println("Done reading file"+doc.getDocumentElement()+ "editor: "+editor+"parent"+parent+"file.getParentFile()"+file.getParentFile()+"restrictedConstraints"+restrictedConstraints);
 		return rootNode;
 	}
 	public void readInGraph(SCXMLGraph graph, String filename, boolean ignoreStoredLayout, SCXMLConstraints restrictedConstraints) throws Exception {

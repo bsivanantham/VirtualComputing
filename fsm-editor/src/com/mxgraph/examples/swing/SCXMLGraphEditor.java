@@ -82,8 +82,11 @@ import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.util.mxUndoableEdit.mxUndoableChange;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
-import org.xml.sax.SAXException;
 
+import org.fife.ui.rsyntaxtextarea.templates.CodeTemplate;
+import org.fife.ui.rsyntaxtextarea.templates.StaticCodeTemplate;
+import org.fife.ui.rtextarea.*;
+import org.fife.ui.rsyntaxtextarea.*;
 
 public class SCXMLGraphEditor extends JPanel
 {
@@ -93,16 +96,6 @@ public class SCXMLGraphEditor extends JPanel
 	public static String filestr;
 
 	private ImportExportPicker iep;
-
-	public String getCodeDisplay() {
-		return codeDisplay;
-	}
-
-	public void setCodeDisplay(String codeDisplay) {
-		this.codeDisplay = codeDisplay;
-	}
-
-	public String codeDisplay = null ;
 
 	public static SimpleAttributeSet BRACKET_ATTRIBUTES=new SimpleAttributeSet();
 	public static SimpleAttributeSet TAGNAME_ATTRIBUTES=new SimpleAttributeSet();
@@ -131,13 +124,8 @@ public class SCXMLGraphEditor extends JPanel
 	public SCXMLGraphEditor() {
 
 	}
-	//public JEditorPane editorPane;
-
-
-
-	public String appendfile(String filename) throws IOException, SAXException, ParserConfigurationException {
-		//File file=new File(filename);
-		//editorPane.setEditorKit(new XMLEditorKit());
+public String docutext ;
+	public String appendfile(String filename) throws IOException {
 		filestr = filename ;
 		ByteArrayOutputStream out = new ByteArrayOutputStream(1000000);
 		InputStream in = new BufferedInputStream(new FileInputStream(filename));
@@ -147,18 +135,48 @@ public class SCXMLGraphEditor extends JPanel
 		}
 		in.close();
 
-		//editorPane.setText(out.toString());
-		//editorPane.setText("test");
-		System.out.println(out.toString());
-		setCodeDisplay(out.toString());
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				docutext = out.toString();
+				new TextEditor().setVisible(true);
+
+			}
+		});
+
 		return out.toString();
+	}
+
+	public class TextEditor extends JFrame{
+		public TextEditor(){
+			JPanel cp = new JPanel(new BorderLayout());
+			RSyntaxTextArea textArea = new RSyntaxTextArea(120,60);
+			textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
+			//textArea.setCodeFoldingEnabled(true);
+			RTextScrollPane sp = new RTextScrollPane(textArea);
+			cp.add(sp);
+			RSyntaxTextArea.setTemplatesEnabled(true);
+			textArea.setText(docutext);
+
+			CodeTemplateManager ctm = RSyntaxTextArea.getCodeTemplateManager();
+
+			CodeTemplate ct = new StaticCodeTemplate("sout","System.out.println(",null);
+			ctm.addTemplate(ct);
+
+			setContentPane(cp);
+			setTitle("Text Editor");
+			setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			pack();
+			setLocationRelativeTo(null);
+		}
 	}
 
 
 	public ImportExportPicker getIOPicker() {return iep;}
 	public SCXMLEditorMenuBar menuBar;
 
-	public enum EditorStatus {STARTUP,EDITING,LAYOUT,POPULATING};
+	public enum EditorStatus {STARTUP,EDITING,LAYOUT,POPULATING}
+
 	private EditorStatus status=EditorStatus.STARTUP;
 	public void setStatus(EditorStatus status) {
 		this.status=status;
@@ -297,7 +315,7 @@ public class SCXMLGraphEditor extends JPanel
 		// or filename#nodename
 		// or filename
 		String namespace,node;
-		int pos=src.indexOf('#',0);
+		int pos=src.indexOf('#');
 		if (pos>=0) {
 			int nmpos=src.indexOf(':',pos);
 			if (nmpos>=0) {
@@ -330,8 +348,7 @@ public class SCXMLGraphEditor extends JPanel
 				
 				@Override
 				public boolean accept(File f) {
-					if (f.getName().equals(inputFileName) || f.isDirectory()) return true;
-					else return false;
+					return f.getName().equals(inputFileName) || f.isDirectory();
 				}
 			});
 			fc.setAcceptAllFileFilterUsed(false);
@@ -429,7 +446,7 @@ public class SCXMLGraphEditor extends JPanel
 		}
 	}
 	public File getThisFileInCurrentDirectory(String src) {
-		int pos=src.indexOf('#',0);
+		int pos=src.indexOf('#');
 		String file;
 		if (pos>=0) file=src.substring(0, pos);
 		else file=src;
@@ -642,7 +659,7 @@ public class SCXMLGraphEditor extends JPanel
 	{
 		Point graphPoint;
 		Point mousePoint = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(),graphComponent);
-		graphPoint=((SCXMLGraphComponent)graphComponent).mouseCoordToGraphMouseCoord(mousePoint);
+		graphPoint= graphComponent.mouseCoordToGraphMouseCoord(mousePoint);
 		if (e.getWheelRotation() < 0)
 		{
 			graphComponent.zoomIn(graphPoint);
@@ -729,7 +746,7 @@ public class SCXMLGraphEditor extends JPanel
 	{
 		Point screenCoord=e.getLocationOnScreen();
 		Point mousePoint = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(),graphComponent);
-		Point graphPoint=((SCXMLGraphComponent)graphComponent).mouseCoordToGraphMouseCoord(mousePoint);
+		Point graphPoint= graphComponent.mouseCoordToGraphMouseCoord(mousePoint);
 		SCXMLEditorPopupMenu menu = new SCXMLEditorPopupMenu(this,mousePoint,graphPoint,screenCoord);
 		menu.show(graphComponent, mousePoint.x, mousePoint.y);
 
@@ -738,7 +755,7 @@ public class SCXMLGraphEditor extends JPanel
 	
 	protected void showElementEditor(MouseEvent e){
 		Point mousePoint = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(),graphComponent);
-		Point graphPoint=((SCXMLGraphComponent)graphComponent).mouseCoordToGraphMouseCoord(mousePoint);
+		Point graphPoint= graphComponent.mouseCoordToGraphMouseCoord(mousePoint);
 		mxCell cell = (mxCell)graphComponent.getCellAt(graphPoint.x, graphPoint.y);
 		if (cell!=null) {
 			if (cell.isVertex()) {
@@ -1059,10 +1076,7 @@ public class SCXMLGraphEditor extends JPanel
 				}
 				saveA.actionPerformed(saveE);
 			}
-			if ((answer==JOptionPane.NO_OPTION) || (answer==JOptionPane.YES_OPTION)) {
-				return true;
-			}
-			return false;
+			return (answer == JOptionPane.NO_OPTION) || (answer == JOptionPane.YES_OPTION);
 		}
 	}
 	
@@ -1127,7 +1141,7 @@ public class SCXMLGraphEditor extends JPanel
 			list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 			list.addListSelectionListener(this);
 			list.setVisibleRowCount(10);
-			list.setCellRenderer((ListCellRenderer) new WarningRenderer());
+			list.setCellRenderer(new WarningRenderer());
 			return list;
 		}
 
@@ -1217,45 +1231,35 @@ public class SCXMLGraphEditor extends JPanel
 	}
 
 	public static class EditorPane extends JPanel implements ListSelectionListener {
-		public JTextArea codeEditor;
 		private final DefaultListModel listModel=new DefaultListModel();
-		private ListCellSelector listSelectorHandler;
+		private ListCellSelector listSelectorHandler1;
 		public String code = "please";
-		public JTextArea editorPane;
 		private final static String newline = "\n";
+		String codetext;
+		private JTextArea editorPane1;
+
+		BufferedReader br = null;
 
 		public EditorPane() throws IOException {
 			//balavivek
-			String text = code;
-			codeEditor=buildGUI(text, filestr);
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		}
 
-		public void actionPerformEditor(String text) {
-			try{
-				//				codeEditor=buildGUI(code, filestr);
-			}
-			catch (Exception e){
-				e.printStackTrace();
-			}
+			String input=SCXMLGraphEditor.getPresetInput();
+			System.out.println("Input; "+input);
+			String text = code;
+			buildGUI(text, filestr);
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			add(new JLabel("Code Editor:"));
+			//add(new JScrollPane(scxmlErrorsList));
+
 		}
 
 		public JTextArea buildGUI(String text, String filename) throws IOException {
-			filename = "/home/balavivek/Bala/SEM2/Virtualcomputing/crowd.xml";
+			editorPane1 = new JTextArea(50, 50);
+			editorPane1.setEditable(true);
+			add(new JScrollPane(editorPane1));
 			JTextArea list = new JTextArea();
-			System.out.println("filenamefilename file: "+filename);
-			 String codetext = null;
-			 int count = 0;
-
-			BufferedReader br = null;
-			add(new JLabel("Code Editor:"));
-			//add(new JScrollPane(scxmlErrorsList));
-			editorPane = new JTextArea(50, 50);
-			editorPane.setEditable(true);
-			add(new JScrollPane(editorPane));
+			codetext=filename;
 			if(filename!= null){
-				//String codetext =buildGUI(code, filestr);
-
 				filestr = filename ;
 				ByteArrayOutputStream out = new ByteArrayOutputStream(1000000);
 				InputStream in = new BufferedInputStream(new FileInputStream(filename));
@@ -1264,104 +1268,34 @@ public class SCXMLGraphEditor extends JPanel
 					out.write(c);
 				}
 				in.close();
-				//editorPane.setText(out.toString());
-				//editorPane.setText("test");
 			codetext = out.toString();
-
+				editorPane1.append("\n filename text : "+codetext);
+				System.out.println("inside editorPane1.getText();"+editorPane1.getText());
 			}
 			System.out.println("inside buildgui"+codetext);
-			editorPane.setText("\n actionPerform  text file: "+codetext);
-			editorPane.append("\n filename text : "+codetext);
+			editorPane1.setText("\n actionPerform  text file: "+codetext);
+			editorPane1.append(null);
 			return list;
-		}
-
-		class ValidationCellSelector extends ListCellSelector {
-			public ValidationCellSelector(JList list, SCXMLGraphComponent gc) {
-				super(list, gc);
-			}
-			@Override
-			public mxCell getCellFromListElement(int selectedIndex) {
-				if (listModel.size()<selectedIndex) return null;
-				Pair<Object,String> element=(Pair<Object, String>) listModel.get(selectedIndex);
-				if (element!=null) {
-					Object cell= element.getFirst();
-					if (cell instanceof mxCell) return (mxCell) cell;
-					else return null;
-				} else return null;
-			}
-		}
-
-		class WarningRenderer extends JTextArea implements ListCellRenderer {
-			public Component getListCellRendererComponent(
-					JList list,
-					Object value,            // value to display
-					int index,               // cell index
-					boolean isSelected,      // is the cell selected
-					boolean cellHasFocus)    // the list and the cell have the focus
-			{
-				String text="";
-				if (value!=null) {
-					text=((Pair<Object,String>) value).getSecond();
-				}
-				setText(text);
-				if (isSelected) {
-					setBackground(list.getSelectionBackground());
-					setForeground(list.getSelectionForeground());
-					setText("file: ");
-
-				}
-				else {
-					setBackground(list.getBackground());
-					setForeground(list.getForeground());
-
-				}
-				setEnabled(list.isEnabled());
-				setFont(list.getFont());
-				setOpaque(true);
-
-				return this;
-			}
 		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			listSelectorHandler.handleSelectEvent(e);
-		}
-		public void setWarnings(final HashMap<Object, String> warnings) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					ArrayList<Integer> indexToBeRemoved=new ArrayList<Integer>();
-					for (int i=0;i<listModel.size();i++) {
-						Pair<Object,String> el=(Pair<Object, String>) listModel.get(i);
-						if (el!=null) {
-							String warningsForCell=warnings.get(el.getFirst());
-							if (!StringUtils.isEmptyString(warningsForCell)) {
-								warningsForCell=StringUtils.cleanupSpaces(warningsForCell);
-								if (!warningsForCell.equals(el.getSecond()))
-									listModel.set(i, new Pair<Object,String>(el.getFirst(),warningsForCell));
-								warnings.remove(el.getFirst());
-							} else indexToBeRemoved.add(i);
-						} else {
-							indexToBeRemoved.add(i);
-						}
-					}
-					for(int i=indexToBeRemoved.size()-1;i>=0;i--)
-						listModel.removeElementAt(indexToBeRemoved.get(i));
-					for(Entry<Object,String> w:warnings.entrySet()) {
-						String warning=StringUtils.cleanupSpaces(w.getValue());
-						if (!StringUtils.isEmptyString(warning)) {
-							System.out.println(warning);
-							listModel.addElement(new Pair<Object, String>(w.getKey(), warning));
-						}
-					}
-				}
-			});
+
+			System.out.println("inside listSelectorHandler1.handleSelectEvent(e);"+listSelectorHandler1);
+			System.out.println("inside ListSelectionEvent"+editorPane1.getText());
+
+			if(filestr!= null){
+				/*System.out.println("inside ListSelectionEvent"+codetext);
+				editorPane1.setText("\n actionPerform  text file: "+codetext);
+				editorPane1.append("\n filename text : "+codetext);*/
+			}
+			listSelectorHandler1.handleSelectEvent(e);
+
 		}
 	}
 
 
-	public JFrame createFrame(SCXMLGraphEditor editor) throws CorruptIndexException, LockObtainFailedException, IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException
+	public JFrame createFrame(SCXMLGraphEditor editor) throws IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException
 	{
 		SCXMLEditorFrame frame = new SCXMLEditorFrame(this);
 		// the contentPane of the JRootPane is a JPanel (that is the FSMGraphEditor)
@@ -1619,8 +1553,10 @@ public class SCXMLGraphEditor extends JPanel
 	public static void setDoLayout(boolean l) { doLayout=l; }
 	public boolean isBackupEnabled() {return backupEnabled;}
 	public static void setBackupEnabled(boolean e) { backupEnabled=e; }
-	public static String getPresetInput() {return inputFileName;}
-	public static void setInput(String i) { inputFileName=i; }
+	public static String getPresetInput() {System.out.println("13: "+inputFileName);return inputFileName;}
+	public static void setInput(String i) { inputFileName=i;
+		System.out.println("13: "+i);
+	}
 	public static String getPresetOutput() {return outputFileName;}
 	public static void setOutput(String o) { outputFileName=o; }
 	public static String getPresetOutputFormat() {
@@ -1632,6 +1568,7 @@ public class SCXMLGraphEditor extends JPanel
 	public static void setOutputFormat(String f) { outputFormat=f; }
 	public static boolean isinConvertMode() {
 		return !StringUtils.isEmptyString(getPresetOutput()) && !StringUtils.isEmptyString(getPresetInput());
+
 	}
 
 	/**
@@ -1652,6 +1589,7 @@ public class SCXMLGraphEditor extends JPanel
 			SCXMLEditorActions.convertNoGUI(editor);
 		} else if (!inHeadlessMode) {
 			String input=getPresetInput();
+			System.out.println("1: "+input);
 			if (!StringUtils.isEmptyString(input)) {
 				OpenAction open = new OpenAction(new File(input));
 				open.actionPerformed(new ActionEvent(editor, 0, ""));
