@@ -1,5 +1,15 @@
 package com.mxgraph.examples.swing.editor.fileimportexport;
 
+import com.mxgraph.examples.config.SCXMLConstraints.RestrictedState;
+import com.mxgraph.examples.config.SCXMLConstraints.RestrictedState.PossibleEvent;
+import com.mxgraph.examples.swing.editor.fileimportexport.OutSource.OUTSOURCETYPE;
+import com.mxgraph.examples.swing.editor.scxml.MyUndoManager;
+import com.mxgraph.model.mxGeometry;
+import com.mxgraph.util.StringUtils;
+import com.mxgraph.util.mxConstants;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -7,18 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-
-import com.mxgraph.examples.config.SCXMLConstraints.RestrictedState;
-import com.mxgraph.examples.config.SCXMLConstraints.RestrictedState.PossibleEvent;
-import com.mxgraph.examples.swing.editor.fileimportexport.OutSource.OUTSOURCETYPE;
-import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLNode.HISTORYTYPE;
-import com.mxgraph.examples.swing.editor.scxml.MyUndoManager;
-import com.mxgraph.model.mxGeometry;
-import com.mxgraph.util.StringUtils;
-import com.mxgraph.util.mxConstants;
 
 public class SCXMLNode implements Serializable {
 	private static final long serialVersionUID = -2136349535452806563L;
@@ -256,6 +254,8 @@ public class SCXMLNode implements Serializable {
 		return (ret==null)?"":ret;
 	}
 	public void setName(String name) {
+
+		System.out.println("name: "+name);
 		node.put(NAME, name);
 	}
 	public String getOnEntry() {

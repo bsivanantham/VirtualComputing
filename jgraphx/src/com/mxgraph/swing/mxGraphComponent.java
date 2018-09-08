@@ -4,87 +4,35 @@
  */
 package com.mxgraph.swing;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Stroke;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EventObject;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoundedRangeModel;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.RepaintManager;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.TransferHandler;
-
 import com.mxgraph.canvas.mxGraphics2DCanvas;
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.model.mxGraphModel.Filter;
 import com.mxgraph.model.mxIGraphModel;
-import com.mxgraph.swing.handler.mxCellHandler;
-import com.mxgraph.swing.handler.mxConnectionHandler;
-import com.mxgraph.swing.handler.mxEdgeHandler;
-import com.mxgraph.swing.handler.mxElbowEdgeHandler;
-import com.mxgraph.swing.handler.mxGraphHandler;
-import com.mxgraph.swing.handler.mxGraphTransferHandler;
-import com.mxgraph.swing.handler.mxPanningHandler;
-import com.mxgraph.swing.handler.mxSubHandler;
-import com.mxgraph.swing.handler.mxVertexHandler;
+import com.mxgraph.swing.handler.*;
 import com.mxgraph.swing.util.mxCellOverlay;
 import com.mxgraph.swing.util.mxICellOverlay;
 import com.mxgraph.swing.view.mxCellEditor;
 import com.mxgraph.swing.view.mxICellEditor;
 import com.mxgraph.swing.view.mxInteractiveCanvas;
-import com.mxgraph.util.mxEvent;
-import com.mxgraph.util.mxEventObject;
-import com.mxgraph.util.mxEventSource;
+import com.mxgraph.util.*;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
-import com.mxgraph.util.mxPoint;
-import com.mxgraph.util.mxRectangle;
-import com.mxgraph.util.mxResources;
-import com.mxgraph.util.mxUtils;
 import com.mxgraph.validation.Validator;
-import com.mxgraph.view.mxCellState;
-import com.mxgraph.view.mxEdgeStyle;
+import com.mxgraph.view.*;
 import com.mxgraph.view.mxEdgeStyle.mxEdgeStyleFunction;
-import com.mxgraph.view.mxGraph;
-import com.mxgraph.view.mxGraphView;
-import com.mxgraph.view.mxTemporaryCellStates;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * For setting the preferred size of the viewport for scrolling, use
@@ -613,7 +561,7 @@ public class mxGraphComponent extends JScrollPane implements Printable
 	{
 		setCellEditor(createCellEditor());
 		this.canvas = createCanvas();
-
+		System.out.println("graph"+graph);
 		// Initializes the buffered view and installs a handler
 		// to set the focus to the container
 		graphControl = createGraphControl();

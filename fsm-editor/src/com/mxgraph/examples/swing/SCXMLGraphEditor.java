@@ -1,59 +1,13 @@
 package com.mxgraph.examples.swing;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.prefs.Preferences;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.parsers.ParserConfigurationException;
-
-import com.mxgraph.util.*;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.store.LockObtainFailedException;
-
 import com.mxgraph.examples.config.SCXMLConstraints;
 import com.mxgraph.examples.swing.editor.fileimportexport.IImportExport;
 import com.mxgraph.examples.swing.editor.fileimportexport.ImportExportPicker;
 import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLImportExport;
 import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLNode;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions;
+import com.mxgraph.examples.swing.editor.scxml.*;
 import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.OpenAction;
 import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.ToggleIgnoreStoredLayout;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorMenuBar;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorPopupMenu;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLFileChoser;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLGraph;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLGraphComponent;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLKeyboardHandler;
 import com.mxgraph.examples.swing.editor.scxml.eleditor.SCXMLEdgeEditor;
 import com.mxgraph.examples.swing.editor.scxml.eleditor.SCXMLElementEditor.Type;
 import com.mxgraph.examples.swing.editor.scxml.eleditor.SCXMLNodeEditor;
@@ -64,36 +18,56 @@ import com.mxgraph.examples.swing.editor.scxml.search.SCXMLSearchTool;
 import com.mxgraph.examples.swing.editor.utils.AbstractActionWrapper;
 import com.mxgraph.examples.swing.editor.utils.ListCellSelector;
 import com.mxgraph.examples.swing.editor.utils.Pair;
-import com.mxgraph.layout.mxCircleLayout;
-import com.mxgraph.layout.mxCompactTreeLayout;
-import com.mxgraph.layout.mxEdgeLabelLayout;
-import com.mxgraph.layout.mxFastOrganicLayout;
-import com.mxgraph.layout.mxIGraphLayout;
-import com.mxgraph.layout.mxParallelEdgeLayout;
-import com.mxgraph.layout.mxPartitionLayout;
-import com.mxgraph.layout.mxStackLayout;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.layout.*;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxIGraphModel;
-import com.mxgraph.swing.mxGraphOutline;
 import com.mxgraph.swing.handler.mxKeyboardHandler;
 import com.mxgraph.swing.handler.mxRubberband;
+import com.mxgraph.swing.mxGraphOutline;
+import com.mxgraph.util.*;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.util.mxUndoableEdit.mxUndoableChange;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
-
+import javafx.scene.shape.Circle;
+import org.apache.commons.cli.*;
+import org.fife.ui.rsyntaxtextarea.CodeTemplateManager;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.templates.CodeTemplate;
 import org.fife.ui.rsyntaxtextarea.templates.StaticCodeTemplate;
-import org.fife.ui.rtextarea.*;
-import org.fife.ui.rsyntaxtextarea.*;
+import org.fife.ui.rtextarea.RTextScrollPane;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.xml.bind.JAXBContext;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.prefs.Preferences;
+
+import static java.awt.Color.BLUE;
 
 public class SCXMLGraphEditor extends JPanel
 {
 	public Preferences preferences=Preferences.userRoot();
 	public ValidationWarningStatusPane validationStatus;
 	public EditorPane editorPane ;
+	public DesignPane designPane;
 	public static String filestr;
+
+	Circle circle_Red, circle_Green, circle_Blue;
+	double orgSceneX, orgSceneY;
+	double orgTranslateX, orgTranslateY;
 
 	private ImportExportPicker iep;
 
@@ -110,7 +84,7 @@ public class SCXMLGraphEditor extends JPanel
 		StyleConstants.setBold(ATTRIBUTENAME_ATTRIBUTES, true);
 
 		StyleConstants.setItalic(ATTRIBUTEVALUE_ATTRIBUTES, true);
-		StyleConstants.setForeground(ATTRIBUTEVALUE_ATTRIBUTES, Color.BLUE);
+		StyleConstants.setForeground(ATTRIBUTEVALUE_ATTRIBUTES, BLUE);
 
 		StyleConstants.setFontSize(PLAIN_ATTRIBUTES, StyleConstants.getFontSize(PLAIN_ATTRIBUTES)-1);
 		StyleConstants.setForeground(PLAIN_ATTRIBUTES, Color.DARK_GRAY);
@@ -332,20 +306,16 @@ public String docutext ;
 		if ((namespace!=null) && (node==null)) throw new Exception("node name not given but namespace given in: '"+src+"'");
 		String SCXMLnodename=(node!=null)?(((namespace!=null)?namespace+":":"")+node):v.getID();
 		// normalize the file name to the system absolute path of that file
-		
 		File f=getThisFileInCurrentDirectory(src);
-		
 		String fileName=f.getAbsolutePath();
 		while (!f.exists()) {
 			JFileChooser fc = new JFileChooser(f.getParent());
 			final String inputFileName=fileName;
 			fc.setFileFilter(new FileFilter() {
-				
 				@Override
 				public String getDescription() {
 					return "Find '"+inputFileName+"' file.";
 				}
-				
 				@Override
 				public boolean accept(File f) {
 					return f.getName().equals(inputFileName) || f.isDirectory();
@@ -520,6 +490,8 @@ public String docutext ;
 		iep=new ImportExportPicker();
 		// Stores and updates the frame title
 		this.appTitle = appTitle;
+		System.out.println("appTitle"+component);
+
 
 		// Stores a reference to the graph and creates the command history
 		graphComponent = component;
@@ -677,6 +649,7 @@ public String docutext ;
 	/**
 	 * 
 	 */
+
 	protected void showOutlinePopupMenu(MouseEvent e)
 	{
 		Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(),
@@ -1238,8 +1211,6 @@ public String docutext ;
 		String codetext;
 		private JTextArea editorPane1;
 
-		BufferedReader br = null;
-
 		public EditorPane() throws IOException {
 			//balavivek
 
@@ -1274,6 +1245,10 @@ public String docutext ;
 			}
 			System.out.println("inside buildgui"+codetext);
 			editorPane1.setText("\n actionPerform  text file: "+codetext);
+
+			Circle circle_Red, circle_Green, circle_Blue;
+			double orgSceneX, orgSceneY;
+			double orgTranslateX, orgTranslateY;
 			editorPane1.append(null);
 			return list;
 		}
@@ -1294,6 +1269,36 @@ public String docutext ;
 		}
 	}
 
+	public class DesignPane extends JPanel implements ActionListener {
+
+		private SCXMLGraphEditor editor;
+
+		public DesignPane() throws IOException {
+			add(new JScrollPane());
+			add(new JLabel("Design Editor:"));
+			setLayout(new GridLayout(5, 5));
+			JButton button = new JButton("Java Code Geeks - Java Examples");
+			add(button,BorderLayout.CENTER);
+			button.addActionListener(this);
+			button.setActionCommand("New SCXML");
+			//add(editor.bind(mxResources.get("newscxml"), new SCXMLEditorActions.NewSCXMLAction(),"/com/mxgraph/examples/swing/images/new.gif"));
+
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String action = e.getActionCommand();
+			if (action.equals("New SCXML")) {
+				System.out.println("Button pressed!");
+				//editor.bind(mxResources.get("newscxml"), new SCXMLEditorActions.NewSCXMLAction(),"/com/mxgraph/examples/swing/images/new.gif");
+				installHandlers();
+				installListeners();
+				//AbstractActionWrapper actionWrapper = new AbstractActionWrapper("com.mxgraph.examples.swing.editor.scxml.SCXMLGraphComponent[,206,0,664x619,layout=javax.swing.ScrollPaneLayout$UIResource,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.synth.SynthBorder@314c508a,flags=360,maximumSize=,minimumSize=,preferredSize=,columnHeader=,horizontalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,606,651x13,layout=javax.swing.plaf.synth.SynthScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.synth.SynthBorder@72f58620,flags=4194624,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=HORIZONTAL,unitIncrement=1],horizontalScrollBarPolicy=HORIZONTAL_SCROLLBAR_AS_NEEDED,lowerLeft=,lowerRight=,rowHeader=,upperLeft=,upperRight=,verticalScrollBar=javax.swing.JScrollPane$ScrollBar[,651,0,13x606,layout=javax.swing.plaf.synth.SynthScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.synth.SynthBorder@2849d901,flags=4194624,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=VERTICAL,unitIncrement=1],verticalScrollBarPolicy=VERTICAL_SCROLLBAR_AS_NEEDED,viewport=javax.swing.JViewport[,1,1,649x604,layout=javax.swing.ViewportLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=25165824,maximumSize=,minimumSize=,preferredSize=,isViewSizeSet=true,lastPaintPosition=java.awt.Point[x=0,y=0],scrollUnderway=false],viewportBorder=javax.swing.plaf.synth.SynthScrollPaneUI$ViewportBorder@6a396c1e] ","Add node", "actioncom.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions$AddAction@2b1116db",null);
+				//menu.add(editor.bind(mxResources.get("newscxml"), new SCXMLEditorActions.NewSCXMLAction(),"/com/mxgraph/examples/swing/images/new.gif"));
+			}
+		}
+	}
+
 
 	public JFrame createFrame(SCXMLGraphEditor editor) throws IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException
 	{
@@ -1311,10 +1316,13 @@ public String docutext ;
 		inner.setLayout(new BoxLayout(inner,BoxLayout.Y_AXIS));
 		validationStatus = new ValidationWarningStatusPane();
 		editorPane = new EditorPane();
+		designPane = new DesignPane();
+
 		inner.add(validationStatus);
 		inner.add(graphOutline);
-		inner.add(editorPane);
-		
+		//inner.add(editorPane);
+		inner.add(designPane);
+
 		JSplitPane outer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inner,graphComponent);
 		outer.setDividerLocation(200);
 		outer.setDividerSize(6);
@@ -1533,7 +1541,7 @@ public String docutext ;
 		try
 		{
 			if (!noGUI) UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			mxConstants.SHADOW_COLOR = Color.LIGHT_GRAY;
+			mxConstants.SHADOW_COLOR = Color.GREEN;
 			SCXMLGraphComponent gc=new SCXMLGraphComponent(new SCXMLGraph());
 			SCXMLGraphEditor editor = new SCXMLGraphEditor("FSM Editor", gc);		
 			if (!noGUI) editor.createFrame(editor).setVisible(true);
@@ -1586,6 +1594,7 @@ public String docutext ;
 		boolean inConvertMode=isinConvertMode();
 		SCXMLGraphEditor editor = startEditor(inConvertMode || inHeadlessMode);
 		if (isinConvertMode()) {
+			System.out.println("main editor: "+editor);
 			SCXMLEditorActions.convertNoGUI(editor);
 		} else if (!inHeadlessMode) {
 			String input=getPresetInput();

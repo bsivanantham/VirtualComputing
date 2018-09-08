@@ -1,42 +1,22 @@
 package com.mxgraph.examples.swing.editor.scxml;
 
-import java.awt.Point;
-import java.io.File;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import com.mxgraph.examples.config.SCXMLConstraints.RestrictedState;
 import com.mxgraph.examples.swing.SCXMLGraphEditor;
 import com.mxgraph.examples.swing.editor.fileimportexport.OutSource;
 import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLEdge;
 import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLImportExport;
 import com.mxgraph.examples.swing.editor.fileimportexport.SCXMLNode;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.AddAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.AddCornerToEdgeAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.DoLayoutAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.EditEdgeAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.EditEdgeOrderAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.EditNodeAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.OpenAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.RemoveCornerToEdgeAction;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.SetNodeAsCluster;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.SetNodeAsFinal;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.SetNodeAsHistory;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.SetNodeAsInitial;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.SetNodeAsOutsourced;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.SetNodeAsParallel;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.SetNodeAsRestricted;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.ToggleDisplayOutsourcedContentInNode;
-import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.ToggleWithTargetAction;
+import com.mxgraph.examples.swing.editor.scxml.SCXMLEditorActions.*;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.model.mxIGraphModel;
 import com.mxgraph.util.mxResources;
 import com.mxgraph.view.mxCellState;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.util.List;
 
 public class SCXMLEditorPopupMenu extends JPopupMenu
 {
@@ -119,7 +99,6 @@ public class SCXMLEditorPopupMenu extends JPopupMenu
 						}
 						add(addRestrictedNodeMenu);
 					}
-					
 					
 					addSeparator();
 					mxCell root=SCXMLImportExport.followUniqueDescendantLineTillSCXMLValueIsFound(model);

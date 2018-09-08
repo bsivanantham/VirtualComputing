@@ -1,31 +1,8 @@
 package com.mxgraph.examples.swing.editor.fileimportexport;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
 import com.mxgraph.examples.config.SCXMLConstraints;
 import com.mxgraph.examples.config.SCXMLConstraints.RestrictedState;
 import com.mxgraph.examples.swing.SCXMLGraphEditor;
-import com.mxgraph.examples.swing.SCXMLGraphEditor.ValidationWarningStatusPane;
 import com.mxgraph.examples.swing.editor.fileimportexport.OutSource.OUTSOURCETYPE;
 import com.mxgraph.examples.swing.editor.scxml.SCXMLFileChoser;
 import com.mxgraph.examples.swing.editor.scxml.SCXMLGraph;
@@ -42,6 +19,22 @@ import com.mxgraph.util.mxResources;
 import com.mxgraph.util.mxUtils;
 import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraphView;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.swing.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SCXMLImportExport implements IImportExport {
 	
@@ -144,7 +137,6 @@ public class SCXMLImportExport implements IImportExport {
 	}
 	
 	public void addSCXMLNode(SCXMLNode node) {
-		//System.out.println("Adding node: "+node);
 		String scxmlID=node.getID();
 		String internalID=getNextInternalID();
 		node.setInternalID(internalID);

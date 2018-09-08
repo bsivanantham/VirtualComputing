@@ -1,4 +1,3 @@
-package edu.usc.ict.simcoach.dialogue.scxml;
 
 import org.apache.commons.scxml.SCXMLListener;
 import org.apache.commons.scxml.model.Transition;
